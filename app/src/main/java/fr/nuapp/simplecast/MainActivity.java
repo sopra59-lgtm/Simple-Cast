@@ -68,12 +68,6 @@ public class MainActivity extends Activity {
         }
     }
     private void refreshStatus() {
-        String ip = "adresse IP inconnue";
-        try {
-            for (NetworkInterface ni : Collections.list(NetworkInterface.getNetworkInterfaces()))
-                for (java.net.InetAddress address : Collections.list(ni.getInetAddresses()))
-                    if (!address.isLoopbackAddress() && address instanceof Inet4Address && address.isSiteLocalAddress()) { ip = address.getHostAddress(); break; }
-        } catch (Exception ignored) {}
-        status.setText("Recherche des appareils Google Cast sur le réseau local…");
+        status.setText("Recherche des appareils Chromecast sur le réseau local…");
     }
 }
