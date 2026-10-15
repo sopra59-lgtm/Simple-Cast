@@ -16,7 +16,9 @@ android {
         minSdk 29
         targetSdk 35
         versionCode = runNumber
-        versionName = "0.2.${runNumber}"
+        versionName = "0.3.${runNumber}"
+        def castId = System.getenv('CAST_RECEIVER_ID') ?: ''
+        buildConfigField 'String', 'CAST_RECEIVER_ID', '\"' + castId + '\"'
     }
 
     signingConfigs {
@@ -39,8 +41,13 @@ android {
         }
     }
 
+    buildFeatures { buildConfig true }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+}
+
+dependencies {
+    implementation 'com.google.android.gms:play-services-cast-framework:22.2.0'
 }
