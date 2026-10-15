@@ -23,10 +23,10 @@ public class ScreenService extends Service {
     private VirtualDisplay display;
     private ImageReader reader;
     private HandlerThread thread;
-    private FrameServer server;
+
     private volatile byte[] latestFrame;
-    private final Handler castHandler = new Handler(Looper.getMainLooper());
-    private long lastCastSent = 0;
+
+
     private long lastCapture;
     private int width, height, density;
     private MediaProjection.Callback callback;
@@ -78,34 +78,19 @@ public class ScreenService extends Service {
                     small.compress(Bitmap.CompressFormat.JPEG, 32, output);
                     latestFrame = output.toByteArray();
                     if (small != cropped) small.recycle();
-                    byte[] frame = latestFrame;
-                    if (frame.length < 45000 && SystemClock.elapsedRealtime()-lastCastSent > 900) {
-                        lastCastSent = SystemClock.elapsedRealtime();
-                        castHandler.post(() -> sendFrame(frame));
-                    }
+
                     cropped.recycle(); padded.recycle();
                 } catch (Exception ignored) { } finally { image.close(); }
             }, new Handler(thread.getLooper()));
             display = projection.createVirtualDisplay("SimpleCast", width, height, density,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, reader.getSurface(), null, new Handler(thread.getLooper()));
-            server = new FrameServer(() -> latestFrame); server.start();
+
             running = true;
         } catch (Exception error) { stopSelf(); }
         return START_NOT_STICKY;
     }
-    private void sendFrame(byte[] frame) {
-        try {
-            com.google.android.gms.cast.framework.CastSession session = com.google.android.gms.cast.framework.CastContext.getSharedInstance(this).getSessionManager().getCurrentCastSession();
-            if(session == null || !session.isConnected()) return;
-            org.json.JSONObject data = new org.json.JSONObject();
-            data.put("type", "frame");
-            data.put("jpeg", android.util.Base64.encodeToString(frame, android.util.Base64.NO_WRAP));
-            session.sendMessage(CastOptionsProvider.NAMESPACE, data.toString());
-        } catch(Exception e) { android.util.Log.w("SimpleCast", "Cast frame delivery failed", e); }
-    }
     @Override public void onDestroy() {
         running = false;
-        if (server != null) server.shutdown();
         if (display != null) { display.release(); display = null; }
         if (reader != null) { reader.close(); reader = null; }
         if (projection != null) { if (callback != null) projection.unregisterCallback(callback); projection.stop(); projection = null; }
