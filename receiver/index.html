@@ -1,0 +1,14 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Simple Cast Receiver</title>
+<style>html,body{margin:0;width:100%;height:100%;background:#000;overflow:hidden}body{display:grid;place-items:center}img{max-width:100vw;max-height:100vh;object-fit:contain}#notice{position:fixed;top:20px;color:#ddd;font:18px sans-serif}</style></head>
+<body><div id="notice">En attente de la capture Android…</div><img id="screen" alt="Duplication Android"><script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+<script>
+const context=cast.framework.CastReceiverContext.getInstance();
+const ns="urn:x-cast:fr.nuapp.simplecast";
+context.addCustomMessageListener(ns,event=>{
+  const msg=event.data;
+  if(!msg||msg.type!=="frame"||typeof msg.jpeg!=="string")return;
+  document.getElementById("screen").src="data:image/jpeg;base64,"+msg.jpeg;
+  document.getElementById("notice").style.display="none";
+});
+context.start({disableIdleTimeout:true});
+</script></body></html>
