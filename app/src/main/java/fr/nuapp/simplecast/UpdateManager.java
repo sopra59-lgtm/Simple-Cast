@@ -29,6 +29,7 @@ public final class UpdateManager {
                 conn.setConnectTimeout(10000);conn.setReadTimeout(10000);
                 conn.setRequestProperty("Accept","application/vnd.github+json");
                 conn.setRequestProperty("User-Agent","Simple-Cast-Android");
+                if(conn.getResponseCode()==404) { if(manual)message("Aucune version publiée dans GitHub Releases pour le moment."); conn.disconnect(); return; }
                 if(conn.getResponseCode()!=200)throw new IOException("GitHub HTTP "+conn.getResponseCode());
                 ByteArrayOutputStream out=new ByteArrayOutputStream();try(InputStream in=conn.getInputStream()){byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1)out.write(b,0,n);}
                 JSONObject release=new JSONObject(out.toString("UTF-8"));
