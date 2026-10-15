@@ -32,18 +32,26 @@ public class MainActivity extends Activity {
         help.setText("Prototype de duplication d'écran sur réseau local. Ouvrez l'adresse indiquée dans un navigateur sur le même Wi-Fi. La prise en charge native de Chromecast nécessite un récepteur Cast dédié.");
         help.setTextSize(16); help.setPadding(0, 24, 0, 24); layout.addView(help);
         status = new TextView(this); status.setTextSize(18); layout.addView(status);
-        TextView title = new TextView(this); title.setText("Appareils Chromecast détectés"); title.setTextSize(20); layout.addView(title);
+        TextView title = new TextView(this); title.setText("Sélectionnez votre Chromecast"); title.setTextSize(20); layout.addView(title);
+        androidx.mediarouter.app.MediaRouteButton castButton = new androidx.mediarouter.app.MediaRouteButton(this);
+        layout.addView(castButton);
+        com.google.android.gms.cast.framework.CastButtonFactory.setUpMediaRouteButton(this, castButton);
         devicesContainer = new LinearLayout(this); devicesContainer.setOrientation(LinearLayout.VERTICAL); layout.addView(devicesContainer);
         TextView empty = new TextView(this); empty.setText("Recherche en cours sur le Wi-Fi…"); devicesContainer.addView(empty);
         discovery = new CastDiscovery(this, names -> {
             devicesContainer.removeAllViews();
             if (names.length == 0) { TextView t = new TextView(this); t.setText("Aucun Chromecast détecté. Vérifiez le Wi-Fi et l’isolation réseau."); devicesContainer.addView(t); }
-            for (String name : names) { Button b = new Button(this); b.setText(name); b.setOnClickListener(v -> new android.app.AlertDialog.Builder(this).setTitle(name).setMessage("Appareil découvert. La duplication directe nécessite encore un récepteur Google Cast personnalisé et un transport vidéo compatible. Aucune diffusion n’est lancée.").setPositiveButton("OK",null).show()); devicesContainer.addView(b); }
+            for (String name : names) { Button b = new Button(this); b.setText(name); b.setOnClickListener(v -> new android.app.AlertDialog.Builder(this).setTitle(name).setMessage("Pour vous connecter, utilisez le bouton Cast au-dessus.").setPositiveButton("OK",null).show()); devicesContainer.addView(b); }
         });
         Button start = new Button(this); start.setText("Démarrer la duplication"); layout.addView(start);
         Button stop = new Button(this); stop.setText("Arrêter"); layout.addView(stop);
-        start.setVisibility(android.view.View.GONE); stop.setVisibility(android.view.View.GONE);
+        start.setVisibility(android.view.View.VISIBLE); stop.setVisibility(android.view.View.VISIBLE);
         start.setOnClickListener(v -> {
+            com.google.android.gms.cast.framework.CastSession cast = com.google.android.gms.cast.framework.CastContext.getSharedInstance(this).getSessionManager().getCurrentCastSession();
+            if(cast == null || !cast.isConnected()) {
+                new android.app.AlertDialog.Builder(this).setMessage("Sélectionnez d’abord un appareil avec le bouton Cast. Un identifiant de récepteur personnalisé est nécessaire pour dupliquer l’écran.").setPositiveButton("OK", null).show();
+                return;
+            }
             MediaProjectionManager manager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
             startActivityForResult(manager.createScreenCaptureIntent(), CAPTURE_REQUEST);
         });
@@ -68,6 +76,8 @@ public class MainActivity extends Activity {
         }
     }
     private void refreshStatus() {
-        status.setText("Recherche des appareils Chromecast sur le réseau local…");
+        status.setText(BuildConfig.CAST_RECEIVER_ID.isEmpty()
+            ? "Configuration nécessaire : ajoutez CAST_RECEIVER_ID dans GitHub Actions pour utiliser le récepteur personnalisé. La découverte fonctionne, pas encore la diffusion."
+            : "Choisissez un appareil avec le bouton Cast, puis lancez la capture d’écran.");
     }
 }
