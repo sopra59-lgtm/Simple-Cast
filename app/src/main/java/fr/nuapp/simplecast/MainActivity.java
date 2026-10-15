@@ -47,6 +47,10 @@ public class MainActivity extends Activity {
         Button stop = new Button(this); stop.setText("Arrêter"); layout.addView(stop);
         start.setVisibility(android.view.View.VISIBLE); stop.setVisibility(android.view.View.VISIBLE);
         start.setOnClickListener(v -> {
+            if (BuildConfig.CAST_RECEIVER_ID.isEmpty()) {
+                new android.app.AlertDialog.Builder(this).setTitle("Configuration Cast manquante").setMessage("Enregistrez le récepteur personnalisé dans la console Google Cast et configurez CAST_RECEIVER_ID dans GitHub Actions.").setPositiveButton("OK",null).show();
+                return;
+            }
             com.google.android.gms.cast.framework.CastSession cast = com.google.android.gms.cast.framework.CastContext.getSharedInstance(this).getSessionManager().getCurrentCastSession();
             if(cast == null || !cast.isConnected()) {
                 new android.app.AlertDialog.Builder(this).setMessage("Sélectionnez d’abord un appareil avec le bouton Cast. Un identifiant de récepteur personnalisé est nécessaire pour dupliquer l’écran.").setPositiveButton("OK", null).show();
