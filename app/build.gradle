@@ -10,17 +10,13 @@ def releaseSigningReady = releaseKeystore &&
 android {
     namespace 'fr.nuapp.simplecast'
     compileSdk 35
-
     defaultConfig {
         applicationId 'fr.nuapp.simplecast'
         minSdk 29
         targetSdk 35
         versionCode = runNumber
-        versionName = "0.3.${runNumber}"
-        def castId = System.getenv('CAST_RECEIVER_ID') ?: ''
-        buildConfigField 'String', 'CAST_RECEIVER_ID', '\"' + castId + '\"'
+        versionName = "0.4.${runNumber}"
     }
-
     signingConfigs {
         release {
             if (releaseSigningReady) {
@@ -31,23 +27,14 @@ android {
             }
         }
     }
-
     buildTypes {
         release {
             minifyEnabled false
-            if (releaseSigningReady) {
-                signingConfig = signingConfigs.release
-            }
+            if (releaseSigningReady) signingConfig = signingConfigs.release
         }
     }
-
-    buildFeatures { buildConfig true }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-}
-
-dependencies {
-    implementation 'com.google.android.gms:play-services-cast-framework:22.2.0'
 }
