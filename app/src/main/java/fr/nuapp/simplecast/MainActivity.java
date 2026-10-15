@@ -37,7 +37,11 @@ public class MainActivity extends Activity {
             startActivityForResult(manager.createScreenCaptureIntent(), CAPTURE_REQUEST);
         });
         stop.setOnClickListener(v -> { Intent i = new Intent(this, ScreenService.class); i.setAction(ScreenService.STOP); startService(i); refreshStatus(); });
-        Button update = new Button(this); update.setText("Vérifier les mises à jour"); layout.addView(update);\n        UpdateManager updates = new UpdateManager(this);\n        update.setOnClickListener(v -> updates.check(true));\n        setContentView(layout); refreshStatus();\n        updates.check(false);
+        Button update = new Button(this); update.setText("Vérifier les mises à jour"); layout.addView(update);
+        UpdateManager updates = new UpdateManager(this);
+        update.setOnClickListener(v -> updates.check(true));
+        setContentView(layout); refreshStatus();
+        updates.check(false);
     }
     @Override protected void onResume() { super.onResume(); if (status != null) refreshStatus(); }
     @Override protected void onActivityResult(int req, int result, Intent data) {
