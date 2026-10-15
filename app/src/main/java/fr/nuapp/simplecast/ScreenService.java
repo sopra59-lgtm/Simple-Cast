@@ -25,6 +25,8 @@ public class ScreenService extends Service {
     private HandlerThread thread;
     private FrameServer server;
     private volatile byte[] latestFrame;
+    private final Handler castHandler = new Handler(Looper.getMainLooper());
+    private long lastCastSent = 0;
     private long lastCapture;
     private int width, height, density;
     private MediaProjection.Callback callback;
@@ -71,8 +73,16 @@ public class ScreenService extends Service {
                     padded.copyPixelsFromBuffer(buffer);
                     Bitmap cropped = Bitmap.createBitmap(padded, 0, 0, width, height);
                     ByteArrayOutputStream output = new ByteArrayOutputStream();
-                    cropped.compress(Bitmap.CompressFormat.JPEG, 65, output);
+                    float ratio = Math.min(1f, 640f / Math.max(width, height));
+                    Bitmap small = Bitmap.createScaledBitmap(cropped, Math.max(1,(int)(width*ratio)), Math.max(1,(int)(height*ratio)), true);
+                    small.compress(Bitmap.CompressFormat.JPEG, 32, output);
                     latestFrame = output.toByteArray();
+                    if (small != cropped) small.recycle();
+                    byte[] frame = latestFrame;
+                    if (frame.length < 45000 && SystemClock.elapsedRealtime()-lastCastSent > 900) {
+                        lastCastSent = SystemClock.elapsedRealtime();
+                        castHandler.post(() -> sendFrame(frame));
+                    }
                     cropped.recycle(); padded.recycle();
                 } catch (Exception ignored) { } finally { image.close(); }
             }, new Handler(thread.getLooper()));
@@ -82,6 +92,16 @@ public class ScreenService extends Service {
             running = true;
         } catch (Exception error) { stopSelf(); }
         return START_NOT_STICKY;
+    }
+    private void sendFrame(byte[] frame) {
+        try {
+            com.google.android.gms.cast.framework.CastSession session = com.google.android.gms.cast.framework.CastContext.getSharedInstance(this).getSessionManager().getCurrentCastSession();
+            if(session == null || !session.isConnected()) return;
+            org.json.JSONObject data = new org.json.JSONObject();
+            data.put("type", "frame");
+            data.put("jpeg", android.util.Base64.encodeToString(frame, android.util.Base64.NO_WRAP));
+            session.sendMessage(CastOptionsProvider.NAMESPACE, data.toString());
+        } catch(Exception e) { android.util.Log.w("SimpleCast", "Cast frame delivery failed", e); }
     }
     @Override public void onDestroy() {
         running = false;
