@@ -1,5 +1,8 @@
 name: Sign Factory Simple-Cast APK
 on:
+  push:
+    branches: [main]
+    paths: ['.github/factory-release-trigger.txt']
   workflow_dispatch:
     inputs:
       factory_ref:
@@ -26,8 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: factory-signing
     env:
-      APP_VERSION_NAME: ${{ inputs.version_name }}
-      APP_VERSION_CODE: ${{ inputs.version_code }}
+      APP_VERSION_NAME: ${{ inputs.version_name || '0.4.45' }}
+      APP_VERSION_CODE: ${{ inputs.version_code || '45' }}
       GH_TOKEN: ${{ github.token }}
       SIGNING_STORE_FILE: ${{ github.workspace }}/factory/simple-cast.jks
       SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
@@ -40,7 +43,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: sopra59-lgtm/Factory
-          ref: ${{ inputs.factory_ref }}
+          ref: ${{ inputs.factory_ref || 'main' }}
           token: ${{ secrets.FACTORY_READ_TOKEN }}
           path: factory
           persist-credentials: false
@@ -84,7 +87,7 @@ jobs:
         run: |
           set -euo pipefail
           cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/simple-cast.apk"
-          gh release create "v${APP_VERSION_CODE}" "$RUNNER_TEMP/simple-cast.apk" --repo "sopra59-lgtm/Simple-Cast" --target main --title "Simple-Cast v${APP_VERSION_CODE}" --notes "Built from Factory: $GITHUB_SHA (Factory ref: ${{ inputs.factory_ref }})."
+          gh release create "v${APP_VERSION_CODE}" "$RUNNER_TEMP/simple-cast.apk" --repo "sopra59-lgtm/Simple-Cast" --target main --title "Simple-Cast v${APP_VERSION_CODE}" --notes "Built from Factory: $GITHUB_SHA (Factory ref: ${{ inputs.factory_ref || 'main' }})."
       - name: Clean up keystore
         if: always()
         run: rm -f "factory/simple-cast.jks"
