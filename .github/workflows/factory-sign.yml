@@ -1,8 +1,5 @@
 name: Sign Factory Simple-Cast APK
 on:
-  push:
-    branches: [main]
-    paths: ['.github/factory-release-trigger.txt']
   workflow_dispatch:
     inputs:
       factory_ref:
@@ -13,12 +10,12 @@ on:
       version_name:
         description: 'Android versionName'
         required: true
-        default: '0.4.45'
+        default: '0.4.46'
         type: string
       version_code:
         description: 'Android versionCode (must increase)'
         required: true
-        default: '45'
+        default: '46'
         type: string
 
 permissions:
@@ -29,8 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: factory-signing
     env:
-      APP_VERSION_NAME: ${{ inputs.version_name || '0.4.45' }}
-      APP_VERSION_CODE: ${{ inputs.version_code || '45' }}
+      APP_VERSION_NAME: ${{ inputs.version_name || '0.4.46' }}
+      APP_VERSION_CODE: ${{ inputs.version_code || '46' }}
       GH_TOKEN: ${{ github.token }}
       SIGNING_STORE_FILE: ${{ github.workspace }}/factory/simple-cast.jks
       SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
@@ -54,7 +51,7 @@ jobs:
           set -euo pipefail
           [[ -n "$KEYSTORE_BASE64" ]] || { echo "::error::Original signing key secret missing"; exit 1; }
           [[ "$APP_VERSION_CODE" =~ ^[0-9]+$ ]] || exit 1
-          (( APP_VERSION_CODE > 44 )) || { echo "::error::versionCode must exceed 44"; exit 1; }
+          (( APP_VERSION_CODE > 45 )) || { echo "::error::versionCode must exceed 44"; exit 1; }
           [[ "$APP_VERSION_NAME" == "0.4.$APP_VERSION_CODE" ]] || exit 1
           if gh release view "v${APP_VERSION_CODE}" --repo "sopra59-lgtm/Simple-Cast" >/dev/null 2>&1; then
             echo "::error::Release already exists"; exit 1
