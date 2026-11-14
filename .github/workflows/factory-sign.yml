@@ -29,12 +29,12 @@ jobs:
       APP_VERSION_NAME: ${{ inputs.version_name }}
       APP_VERSION_CODE: ${{ inputs.version_code }}
       GH_TOKEN: ${{ github.token }}
-          SIGNING_STORE_FILE: ${{ github.workspace }}/factory/simple-cast.jks
-          SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-          SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          CAST_RECEIVER_ID: ${{ vars.CAST_RECEIVER_ID }}
+      SIGNING_STORE_FILE: ${{ github.workspace }}/factory/simple-cast.jks
+      SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+      SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      CAST_RECEIVER_ID: ${{ vars.CAST_RECEIVER_ID }}
     steps:
       - name: Check out Factory source (private repository)
         uses: actions/checkout@v4
